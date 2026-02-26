@@ -69,6 +69,19 @@ body {
   color: var(--sub); margin-top: 3px; letter-spacing: 0.05em;
 }
 
+.online-badge {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 6px;
+  background: rgba(61,140,64,0.1); border: 1px solid rgba(61,140,64,0.25);
+  border-radius: 99px; padding: 2px 10px 2px 6px;
+  font-size: 0.68rem; font-weight: 700; color: var(--green);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.online-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); animation: blink 1.4s ease-in-out infinite;
+}
+
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
 .error-badge {
@@ -218,6 +231,33 @@ body.has-error .online-badge { display: none; }
 .spec-row-val { color: var(--ink); font-weight: 600; }
 
 .spec-row-icon { font-size: 0.8rem; width: 18px; text-align: center; flex-shrink: 0; }
+
+/* ── PROJECT CARDS ── */
+.project-desc {
+  font-size: 0.8rem; line-height: 1.55; color: var(--sub);
+  margin-bottom: 12px; font-weight: 400;
+}
+
+.project-tags {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;
+}
+
+.tag {
+  font-family: 'DM Mono', monospace; font-size: 0.62rem;
+  background: rgba(0,0,0,0.04); border: 1px solid var(--line);
+  border-radius: 99px; padding: 2px 9px; color: var(--sub);
+  letter-spacing: 0.03em;
+}
+
+.project-link {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'DM Mono', monospace; font-size: 0.68rem;
+  color: var(--card-accent, var(--blue)); text-decoration: none;
+  border-top: 1px solid var(--line); padding-top: 10px; margin-top: 2px;
+  opacity: 0.85; transition: opacity 0.15s;
+}
+
+.project-link:hover { opacity: 1; }
 
 /* ── FOOTER ── */
 .footer {
@@ -399,6 +439,48 @@ body.has-error .online-badge { display: none; }
         <div class="spec-row"><span class="spec-row-icon">📱</span><span class="spec-row-label">Model</span><span class="spec-row-val">Galaxy S24</span></div>
       </div>
     </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── MY PROJECTS ── -->
+  <p class="section-label">My Projects</p>
+  <div class="spec-grid">
+
+    <div class="spec-card" style="--card-accent:#d4631a">
+      <div class="spec-card-header">
+        <h3>tcpraw</h3>
+        <span class="badge primary">Go · CLI</span>
+      </div>
+      <p class="project-desc">Przesyłanie plików przez TCP z 6-cyfrowymi kodami. Szyfrowanie AES-256-GCM po stronie klienta — serwer nigdy nie widzi klucza. Bez rejestracji.</p>
+      <div class="project-tags">
+        <span class="tag">🔒 AES-256-GCM</span>
+        <span class="tag">📦 do 15 GB</span>
+        <span class="tag">🌐 web download</span>
+      </div>
+      <a class="project-link" href="https://github.com/hdmain/rawuploader" target="_blank">
+        <span>github.com/hdmain/rawuploader</span>
+        <span>↗</span>
+      </a>
+    </div>
+
+    <div class="spec-card" style="--card-accent:#1a5fa8">
+      <div class="spec-card-header">
+        <h3>CheapDeck</h3>
+        <span class="badge server">ESP32 · DIY</span>
+      </div>
+      <p class="project-desc">DIY alternatywa dla Stream Decka na ESP32 z ekranem dotykowym. Konfigurowalny układ przycisków, mapowanie klawiszy, auto-discovery przez WiFi.</p>
+      <div class="project-tags">
+        <span class="tag">📱 touchscreen</span>
+        <span class="tag">🎹 key mapping</span>
+        <span class="tag">🔎 auto-discovery</span>
+      </div>
+      <a class="project-link" href="https://github.com/hdmain/CheapDeck" target="_blank">
+        <span>github.com/hdmain/CheapDeck</span>
+        <span>↗</span>
+      </a>
+    </div>
+
   </div>
 
   <div class="footer">
