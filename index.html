@@ -1,148 +1,390 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Specifications</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Monitor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;600;800&display=swap');
+
+  :root {
+    --bg: #080c12;
+    --panel: #0d1520;
+    --border: #1a2d45;
+    --accent: #00e5ff;
+    --accent2: #ff3d71;
+    --accent3: #a3ff00;
+    --accent4: #ff9500;
+    --text: #c8e0f0;
+    --dim: #3a5570;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Exo 2', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(0,229,255,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(163,255,0,0.03) 0%, transparent 50%);
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,229,255,0.5);
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--dim);
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--accent));
+  }
+
+  .stat-card:hover { border-color: var(--card-color, var(--accent)); }
+
+  .stat-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.5rem;
+    color: var(--card-color, var(--accent));
+    text-shadow: 0 0 12px currentColor;
+    line-height: 1;
+  }
+
+  .stat-unit {
+    font-size: 0.7rem;
+    color: var(--dim);
+    margin-top: 3px;
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+  }
+
+  .chart-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    position: relative;
+  }
+
+  .chart-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chart-title span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--chart-color, var(--accent));
+  }
+
+  .chart-wrap { position: relative; height: 160px; }
+
+  canvas { width: 100% !important; }
+
+  .ip-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    color: var(--accent);
+  }
+
+  .uptime-bar {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--dim);
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1 class="title">
-                <i class="fas fa-microchip"></i>
-                Specifications
-            </h1>
-            <div class="subtitle">Hardware Overview</div>
-        </header>
 
-        <main class="content">
-            <!-- Workstations Section -->
-            <section class="section">
-                <h2 class="section-title">
-                    <i class="fas fa-desktop"></i>
-                    Workstations
-                </h2>
-                
-                <div class="device-grid">
-                    <div class="device-card primary">
-                        <div class="device-header">
-                            <h3>Main PC</h3>
-                            <span class="device-badge">Primary</span>
-                        </div>
-                        <div class="device-specs">
-                            <div class="spec-item">
-                                <i class="fab fa-windows"></i>
-                                <span class="spec-label">OS:</span>
-                                <span class="spec-value">Windows 11</span>
-                            </div>
-                            <div class="spec-item">
-                                <i class="fas fa-memory"></i>
-                                <span class="spec-label">GPU:</span>
-                                <span class="spec-value">NVIDIA RTX 3060</span>
-                            </div>
-                            <div class="spec-item">
-                                <i class="fas fa-microchip"></i>
-                                <span class="spec-label">CPU:</span>
-                                <span class="spec-value">AMD Ryzen 5 5600</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="device-card">
-                        <div class="device-header">
-                            <h3>ThinkPad T480</h3>
-                            <span class="device-badge secondary">Mobile</span>
-                        </div>
-                        <div class="device-specs">
-                            <div class="spec-item">
-                                <i class="fab fa-linux"></i>
-                                <span class="spec-label">OS:</span>
-                                <span class="spec-value">Linux Mint</span>
-                            </div>
-                            <div class="spec-item">
-                                <i class="fas fa-microchip"></i>
-                                <span class="spec-label">CPU:</span>
-                                <span class="spec-value">Intel i5-8250U</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Servers Section -->
-            <section class="section">
-                <h2 class="section-title">
-                    <i class="fas fa-server"></i>
-                    Servers
-                </h2>
-                
-                <div class="device-grid">
-                    <div class="device-card">
-                        <div class="device-header">
-                            <h3>HP EliteDesk 800</h3>
-                            <span class="device-badge server">Server</span>
-                        </div>
-                        <div class="device-specs">
-                            <div class="spec-item">
-                                <i class="fas fa-cube"></i>
-                                <span class="spec-label">Platform:</span>
-                                <span class="spec-value">Proxmox VE</span>
-                            </div>
-                            <div class="spec-item">
-                                <i class="fas fa-microchip"></i>
-                                <span class="spec-label">CPU:</span>
-                                <span class="spec-value">Intel i5-6500</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Mobile Section -->
-            <section class="section">
-                <h2 class="section-title">
-                    <i class="fas fa-mobile-alt"></i>
-                    Mobile
-                </h2>
-                
-                <div class="device-grid">
-                    <div class="device-card">
-                        <div class="device-header">
-                            <h3>Samsung Galaxy S24</h3>
-                            <span class="device-badge mobile">Mobile</span>
-                        </div>
-                        <div class="device-specs">
-                            <div class="spec-item">
-                                <i class="fab fa-android"></i>
-                                <span class="spec-label">Platform:</span>
-                                <span class="spec-value">Android</span>
-                            </div>
-                            <div class="spec-item">
-                                <i class="fas fa-star"></i>
-                                <span class="spec-label">Model:</span>
-                                <span class="spec-value">Galaxy S24</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <footer class="footer">
-            <div class="footer-content">
-                <p>&copy; 2025 Tech Specifications. All rights reserved.</p>
-                <div class="footer-stats">
-                    <span><i class="fas fa-desktop"></i> 2 Workstations</span>
-                    <span><i class="fas fa-server"></i> 1 Server</span>
-                    <span><i class="fas fa-mobile-alt"></i> 1 Mobile Device</span>
-                </div>
-            </div>
-        </footer>
+<header>
+  <div class="logo">⬡ SYS-MONITOR</div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <span class="ip-tag" id="ip-tag">---</span>
+    <div class="status">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">CONNECTING</span>
     </div>
+  </div>
+</header>
 
-    <script src="script.js"></script>
+<div class="stats-row">
+  <div class="stat-card" style="--card-color:#00e5ff">
+    <div class="stat-label">CPU Temp</div>
+    <div class="stat-value" id="v-cpu-temp">--</div>
+    <div class="stat-unit">°C</div>
+  </div>
+  <div class="stat-card" style="--card-color:#ff3d71">
+    <div class="stat-label">CPU Load</div>
+    <div class="stat-value" id="v-cpu-load">--</div>
+    <div class="stat-unit">%</div>
+  </div>
+  <div class="stat-card" style="--card-color:#a3ff00">
+    <div class="stat-label">RAM Used</div>
+    <div class="stat-value" id="v-mem">--</div>
+    <div class="stat-unit">%</div>
+  </div>
+  <div class="stat-card" style="--card-color:#ff9500">
+    <div class="stat-label">Net RX</div>
+    <div class="stat-value" id="v-rx">--</div>
+    <div class="stat-unit">kbps</div>
+  </div>
+  <div class="stat-card" style="--card-color:#bf80ff">
+    <div class="stat-label">Net TX</div>
+    <div class="stat-value" id="v-tx">--</div>
+    <div class="stat-unit">kbps</div>
+  </div>
+  <div class="stat-card" style="--card-color:#00e5ff">
+    <div class="stat-label">DHT Temp</div>
+    <div class="stat-value" id="v-dht-temp">--</div>
+    <div class="stat-unit">°C</div>
+  </div>
+  <div class="stat-card" style="--card-color:#00cfb4">
+    <div class="stat-label">Humidity</div>
+    <div class="stat-value" id="v-humidity">--</div>
+    <div class="stat-unit">%</div>
+  </div>
+  <div class="stat-card" style="--card-color:#ffdd00">
+    <div class="stat-label">WiFi RSSI</div>
+    <div class="stat-value" id="v-rssi">--</div>
+    <div class="stat-unit">dBm</div>
+  </div>
+  <div class="stat-card" style="--card-color:#ff9500">
+    <div class="stat-label">Free Heap</div>
+    <div class="stat-value" id="v-heap">--</div>
+    <div class="stat-unit">KB</div>
+  </div>
+  <div class="stat-card" style="--card-color:#a3ff00">
+    <div class="stat-label">Uptime</div>
+    <div class="stat-value" id="v-uptime" style="font-size:1rem;padding-top:4px">--</div>
+    <div class="stat-unit">h:m:s</div>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-card">
+    <div class="chart-title" style="--chart-color:#00e5ff"><span></span>CPU Temperature & Load</div>
+    <div class="chart-wrap"><canvas id="c-cpu"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title" style="--chart-color:#a3ff00"><span></span>Memory Usage</div>
+    <div class="chart-wrap"><canvas id="c-mem"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title" style="--chart-color:#ff9500"><span></span>Network RX / TX</div>
+    <div class="chart-wrap"><canvas id="c-net"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title" style="--chart-color:#00cfb4"><span></span>DHT Sensor (Temp & Humidity)</div>
+    <div class="chart-wrap"><canvas id="c-dht"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title" style="--chart-color:#ffdd00"><span></span>WiFi Signal Strength</div>
+    <div class="chart-wrap"><canvas id="c-wifi"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title" style="--chart-color:#ff9500"><span></span>Free Heap Memory</div>
+    <div class="chart-wrap"><canvas id="c-heap"></canvas></div>
+  </div>
+</div>
+
+<script>
+const API = 'https://stats.hdmain.eu/api/stats';
+const MAX_POINTS = 60;
+const labels = [];
+
+function mkChart(id, datasets, yLabel, yMin, yMax) {
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: '#3a5570', font: { family: 'Share Tech Mono', size: 10 }, boxWidth: 10 } } },
+      scales: {
+        x: {
+          ticks: { display: false },
+          grid: { color: 'rgba(26,45,69,0.6)' },
+          border: { color: '#1a2d45' }
+        },
+        y: {
+          min: yMin, max: yMax,
+          ticks: { color: '#3a5570', font: { family: 'Share Tech Mono', size: 10 }, maxTicksLimit: 5 },
+          grid: { color: 'rgba(26,45,69,0.6)' },
+          border: { color: '#1a2d45' },
+          title: yLabel ? { display: false } : undefined
+        }
+      }
+    }
+  });
+}
+
+function ds(label, color, data=[]) {
+  return {
+    label, data,
+    borderColor: color,
+    backgroundColor: color + '18',
+    borderWidth: 1.5,
+    pointRadius: 0,
+    tension: 0.4,
+    fill: true
+  };
+}
+
+const charts = {
+  cpu: mkChart('c-cpu', [ds('Temp °C','#00e5ff'), ds('Load %','#ff3d71')]),
+  mem: mkChart('c-mem', [ds('RAM %','#a3ff00')], '', 0, 100),
+  net: mkChart('c-net', [ds('RX kbps','#ff9500'), ds('TX kbps','#bf80ff')]),
+  dht: mkChart('c-dht', [ds('Temp °C','#00cfb4'), ds('Humidity %','#00e5aa')]),
+  wifi: mkChart('c-wifi', [ds('RSSI dBm','#ffdd00')]),
+  heap: mkChart('c-heap', [ds('Heap KB','#ff9500')])
+};
+
+function push(chart, ...values) {
+  values.forEach((v, i) => {
+    chart.datasets[i].data.push(v);
+    if (chart.datasets[i].data.length > MAX_POINTS)
+      chart.datasets[i].data.shift();
+  });
+}
+
+function fmtUptime(sec) {
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  const s = sec%60;
+  return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function set(id, val) { document.getElementById(id).textContent = val; }
+
+async function fetchData() {
+  try {
+    const r = await fetch(API);
+    const d = await r.json();
+
+    // Status
+    document.getElementById('status-dot').style.background = '#a3ff00';
+    document.getElementById('status-text').textContent = 'LIVE';
+    document.getElementById('ip-tag').textContent = d.ip || '---';
+
+    // Stats
+    set('v-cpu-temp', d.cpu_temp);
+    set('v-cpu-load', d.cpu_load);
+    set('v-mem', d.mem_used_pct);
+    set('v-rx', d.net_rx_kbps.toFixed(1));
+    set('v-tx', d.net_tx_kbps.toFixed(1));
+    set('v-dht-temp', d.dht_temp);
+    set('v-humidity', d.dht_humidity);
+    set('v-rssi', d.wifi_rssi);
+    set('v-heap', d.free_heap_kb);
+    set('v-uptime', fmtUptime(d.uptime_sec));
+
+    // Charts
+    const now = new Date().toLocaleTimeString('pl');
+    labels.push(now);
+    if (labels.length > MAX_POINTS) labels.shift();
+
+    push(charts.cpu, d.cpu_temp, d.cpu_load);
+    push(charts.mem, d.mem_used_pct);
+    push(charts.net, d.net_rx_kbps, d.net_tx_kbps);
+    push(charts.dht, d.dht_temp, d.dht_humidity);
+    push(charts.wifi, d.wifi_rssi);
+    push(charts.heap, d.free_heap_kb);
+
+    Object.values(charts).forEach(c => c.update());
+  } catch(e) {
+    document.getElementById('status-dot').style.background = '#ff3d71';
+    document.getElementById('status-text').textContent = 'ERROR';
+    console.error(e);
+  }
+}
+
+fetchData();
+setInterval(fetchData, 1000);
+</script>
 </body>
 </html>
